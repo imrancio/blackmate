@@ -56,9 +56,9 @@
   #Fetch the current icons theme in use 
   echo -e "\033[32m[*]\e[0m Update the icons theme in use";
 
-  if [[ -f /home/$SUDO_USER/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml ]]; then
+  if [[ -f /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml ]]; then
 
-    thic=`cat /home/$SUDO_USER/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml | grep IconThemeName | 
+    thic=`cat /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml | grep IconThemeName | 
    	  sed 's/<property name="IconThemeName" type="string" value\="//' | tr -d '"/>' | tr -d ' '`;
 
   #If the file do not exist, we assume the current theme is the default one (gnome)
@@ -88,9 +88,6 @@
 
   wget -q -P /usr/share/blackmate/ https://mirror.yandex.ru/mirrors/blackarch/blackarch/os/x86_64/blackarch.db.tar.gz 
   tar -zxf /usr/share/blackmate/blackarch.db.tar.gz -C /usr/share/blackmate/tmp
-
-  #Terminal to use for the blackarch entry
-  terminal=`echo xfce4-terminal`;
   
   echo -e "\033[32m[*]\e[0m Generating the menu, please wait...";
 
@@ -112,6 +109,12 @@
 
 	  #Check if the tool is installed on the system, otherwise skip to the next
 	  command -v $tname >/dev/null 2>&1 || { continue; }
+
+	   #Version of the tool
+	   tver=`cat /usr/share/blackmate/tmp/$u/desc | sed '/^\s*$/d' | sed -n '/%VERSION%/{n;p}'`;
+
+	   #Description of the tool
+	   tdesc=`cat /usr/share/blackmate/tmp/$u/desc | sed '/^\s*$/d' | sed -n '/%DESC%/{n;p}'`;
 
 	   #Set categorie of the subcategorie tool branche
 	   if [[ $subc == "code-audit" ]] || [[ $subc == 'decompiler' ]] || 
@@ -209,8 +212,12 @@
 
 	    #Parse the default launcher and set his name
 	    cat /usr/share/blackmate/dfdesk | sed 's/^Name=.*/Name='$i'/' |
+	    #Set the version and description
+	    sed 's/^Version=.*/Version='$tver'/' | 
+	    sed "s/^Comment=.*/Comment=$tdesc/" | 
 	    #Set the bash command to execute
-	    sed 's/^Exec=.*/Exec='$terminal' -e "bash -ic \\"\/usr\/bin\/'$i'; exec bash"\\"/' |
+	    sed 's/^TryExec=.*/Exec=\/usr\/bin\/'$i'/' |
+	    sed 's/^Exec=.*/Exec=sh -c "\/usr\/bin\/'$i';$SHELL"/' |
 	    #Set the categorie to the launcher && Set the name file to ba-`toolsname`.desktop 
 	    sed 's/Categories=.*/Categories='$namecat';/' > /usr/share/blackmate/ba-$i.desktop
 	 

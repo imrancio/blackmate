@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=default
+Version=1.0
 Icon=utilities-terminal
 Comment=default
+TryExec=default
 Exec=default
 Terminal=True
 Type=Application
